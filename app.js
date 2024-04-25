@@ -16,7 +16,6 @@ import {
   deleteCheeseById,
 } from "./cheeses.js";
 
-
 const app = express();
 const PORT = process.env.PORT;
 
@@ -47,8 +46,11 @@ app.put("/wines/:id", async function (req, res) {
   res.status(200).json({ success: true, payload: updatedWine });
 });
 
-
-app.delete("/wines/:id", async function (req, res) {});
+app.delete("/wines/:id", async function (req, res) {
+  const id = req.params.id;
+  const wine = await deleteWineById(id);
+  res.status(200).json({ success: true, payload: wine });
+});
 
 // Cheese Route Handlers
 
@@ -76,7 +78,11 @@ app.put("/cheeses/:id", async function (req, res) {
   res.status(200).json({ success: true, payload: updatedCheese });
 });
 
-app.delete("/cheeses/:id", async function (req, res) {});
+app.delete("/cheeses/:id", async function (req, res) {
+  const id = req.params.id;
+  const deletedCheese = await deleteCheeseById(id);
+  res.status(200).json({ success: true, payload: deletedCheese });
+});
 
 app.listen(PORT, function () {
   console.log(`Server listening on port ${PORT}`);

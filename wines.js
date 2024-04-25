@@ -39,5 +39,23 @@ export async function updateWineById(id, body) {
   return result.rows[0] || null;
 }
 
-export async function deleteWineById(id) {}
+export async function deleteWineById(id) {
+  try {
+    const checkQuery = "SELECT * FROM cheeses WHERE wine_id = $1;";
+    const checkResult = await pool.query(checkQuery, [id]);
 
+    if (checkResult.rows.length > 0) {
+      const removeReferenceQuery =
+        "UPDATE cheeses SET wine_id = NULL WHERE wine_id = $1;";
+      await pool.query(removeReferenceQuery, [id]);
+    }
+
+    const deleteQuery = "DELETE FROM wines WHERE id = $1 RETURNING *;";
+    const result = await pool.query(deleteQuery, [id]);
+
+    return result.rows[0] || null;
+  } catch (error) {
+    console.error("Error deleting wine:", error);
+    return null;
+  }
+}

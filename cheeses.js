@@ -42,4 +42,7 @@ export async function updateCheeseById(id, body) {
 }
 
 export async function deleteCheeseById(id) {
+  const queryText = "DELETE FROM cheeses WHERE id = $1 RETURNING *;";
+  const result = await pool.query(queryText, [id]);
+  return result.rows[0] || null;
 }
