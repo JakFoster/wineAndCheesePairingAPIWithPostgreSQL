@@ -1,12 +1,12 @@
 import express from "express";
-
+import CustomError from "./customError/customError.js";
 import {
   getWines,
   getWineById,
   createWine,
   updateWineById,
   deleteWineById,
-} from "./wines.js";
+} from "./models/wines.js";
 
 import {
   getCheeses,
@@ -14,7 +14,7 @@ import {
   createCheese,
   updateCheeseById,
   deleteCheeseById,
-} from "./cheeses.js";
+} from "./models/cheeses.js";
 
 const app = express();
 const PORT = process.env.PORT;
@@ -23,14 +23,36 @@ app.use(express.json());
 
 // Wine Route Handlers
 app.get("/wines/", async function (req, res) {
-  const wines = await getWines();
-  res.status(200).json({ success: true, payload: wines });
+  try {
+    const wines = await getWines();
+    if(wines.length === 0) {
+      throw new CustomError('No wines found', 500);
+    }
+    res.status(200).json({ success: true, payload: wines });
+  } catch (error) {
+    console.error(error);
+    res.status(error.statusCode).json({ success: false, error: error });
+  }
 });
 
 app.get("/wines/:id", async function (req, res) {
   const id = req.params.id;
-  const wine = await getWineById(id);
-  res.status(200).json({ success: true, payload: wine });
+  try {
+    const wine = await getWineById(id);
+    if(!wine) {
+      throw new CustomError('Wine not found', 404);
+    }
+    res.status(200).json({ success: true, payload: wine });
+  }
+  catch (error) {
+    if (error instanceof CustomError) {
+      res.status(error.statusCode).json({ success: false, error: error });
+      return;
+    } else {
+      res.status(500).json({ success: false, error: error });
+    }
+    
+  }
 });
 
 app.post("/wines/", async function (req, res) {

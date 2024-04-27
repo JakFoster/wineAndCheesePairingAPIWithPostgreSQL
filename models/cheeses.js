@@ -1,4 +1,4 @@
-import { pool } from "./db/index.js";
+import { pool } from "../db/index.js";
 
 export async function getCheeses() {
   const queryText = "SELECT * FROM cheeses;";
