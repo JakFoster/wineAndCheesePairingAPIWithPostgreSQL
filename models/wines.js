@@ -39,6 +39,9 @@ export async function updateWineById(id, body) {
   return result.rows[0] || null;
 }
 
+ 
+// Sets the reference to the wine in the cheeses table to null, 
+// in order to avoid cascade deletion.
 export async function deleteWineById(id) {
   try {
     const checkQuery = "SELECT * FROM cheeses WHERE wine_id = $1;";

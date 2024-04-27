@@ -25,12 +25,11 @@ app.use(express.json());
 app.get("/wines/", async function (req, res) {
   try {
     const wines = await getWines();
-    if(wines.length === 0) {
-      throw new CustomError('No wines found', 500);
+    if (wines.length === 0) {
+      throw new CustomError("No wines found", 500);
     }
     res.status(200).json({ success: true, payload: wines });
   } catch (error) {
-    console.error(error);
     res.status(error.statusCode).json({ success: false, error: error });
   }
 });
@@ -39,39 +38,105 @@ app.get("/wines/:id", async function (req, res) {
   const id = req.params.id;
   try {
     const wine = await getWineById(id);
-    if(!wine) {
-      throw new CustomError('Wine not found', 404);
+    if (!wine) {
+      throw new CustomError("Wine not found", 404);
     }
     res.status(200).json({ success: true, payload: wine });
-  }
-  catch (error) {
+  } catch (error) {
     if (error instanceof CustomError) {
       res.status(error.statusCode).json({ success: false, error: error });
       return;
     } else {
       res.status(500).json({ success: false, error: error });
     }
-    
   }
 });
 
 app.post("/wines/", async function (req, res) {
   const data = req.body;
-  const wine = await createWine(data);
-  res.status(201).json({ success: true, payload: wine });
+  try {
+    if (
+      !data.name ||
+      data.name.trim() === "" ||
+      !data.country ||
+      data.country.trim() === "" ||
+      !data.colour ||
+      data.colour.trim() === "" ||
+      !data.description ||
+      data.description.trim() === ""
+    ) {
+      throw new CustomError("Missing required fields", 400);
+    }
+    const wine = await createWine(data);
+    if (!wine) {
+      throw new CustomError("Error creating wine", 500);
+    }
+    res.status(201).json({ success: true, payload: wine });
+  } catch (error) {
+    if (error instanceof CustomError) {
+      res.status(error.statusCode).json({ success: false, error: error });
+      return;
+    } else {
+      res.status(500).json({ success: false, error: error });
+    }
+  }
 });
 
 app.put("/wines/:id", async function (req, res) {
   const id = req.params.id;
   const data = req.body;
-  const updatedWine = await updateWineById(id, data);
-  res.status(200).json({ success: true, payload: updatedWine });
+  try {
+    if (
+      !data.name ||
+      data.name.trim() === "" ||
+      !data.country ||
+      data.country.trim() === "" ||
+      !data.colour ||
+      data.colour.trim() === "" ||
+      !data.description ||
+      data.description.trim() === ""
+    ) {
+      throw new CustomError("Missing required fields", 400);
+    }
+    const checkId = await getWineById(id);
+    if (!checkId) {
+      throw new CustomError("Wine not found", 404);
+    }
+    const updatedWine = await updateWineById(id, data);
+    if (!updatedWine) {
+      throw new CustomError("Error updating wine", 500);
+    }
+    res.status(201).json({ success: true, payload: updatedWine });
+  } catch (error) {
+    if (error instanceof CustomError) {
+      res.status(error.statusCode).json({ success: false, error: error });
+      return;
+    } else {
+      res.status(500).json({ success: false, error: error });
+    }
+  }
 });
 
 app.delete("/wines/:id", async function (req, res) {
   const id = req.params.id;
-  const wine = await deleteWineById(id);
+  try {
+    const checkId = await getWineById(id);
+    if (!checkId) {
+      throw new CustomError("Wine not found", 404);
+    }
+    const wine = await deleteWineById(id);
+    if (!wine) {
+      throw new CustomError("Error deleting wine", 500);
+    }
   res.status(200).json({ success: true, payload: wine });
+  } catch (error) {
+    if (error instanceof CustomError) {
+      res.status(error.statusCode).json({ success: false, error: error });
+      return;
+    } else {
+      res.status(500).json({ success: false, error: error });
+    }
+  }
 });
 
 // Cheese Route Handlers
